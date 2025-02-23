@@ -60,19 +60,14 @@ describe("ShadowCheckpointService", () => {
 
 		const shadowDir = path.join(tmpDir, `shadow-${Date.now()}`)
 		const workspaceDir = path.join(tmpDir, `workspace-${Date.now()}`)
-
-		let t0 = Date.now()
 		const repo = await initRepo({ workspaceDir })
-		console.log(`initRepo took ${Date.now() - t0}ms (${workspaceDir})`)
 
 		testFile = repo.testFile
 
-		t0 = Date.now()
 		service = await CheckpointServiceFactory.create({
 			strategy: "shadow",
 			options: { taskId, shadowDir, workspaceDir, log: () => {} },
 		})
-		console.log(`CheckpointServiceFactory.create took ${Date.now() - t0}ms (${workspaceDir})`)
 
 		workspaceGit = repo.git
 	})
