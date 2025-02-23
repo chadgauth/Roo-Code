@@ -58,7 +58,7 @@ jobs:
       - name: Install dependencies
         run: npm run install:all
       - name: Run unit tests
-        run: npx jest
+        run: npm test
 
   test-webview:
     runs-on: ubuntu-latest
@@ -74,7 +74,7 @@ jobs:
         run: npm run install:all
       - name: Run unit tests
         working-directory: webview-ui
-        run: npx jest
+        run: npm test
 
   unit-test:
     needs: [test-extension, test-webview]
