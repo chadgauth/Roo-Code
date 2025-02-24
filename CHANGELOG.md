@@ -1,5 +1,11 @@
 # Roo Code Changelog
 
+## 3.3.27
+
+### Patch Changes
+
+- Include the original task in the power steering content
+
 ## [3.3.26]
 
 - Adjust the default prompt for Debug mode to focus more on diagnosis and to require user confirmation before moving on to implementation
