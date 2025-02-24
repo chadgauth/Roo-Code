@@ -1,8 +1,6 @@
 # Roo Code Changelog
 
-## 3.3.27
-
-### Patch Changes
+## [3.3.27]
 
 - Include the original task in the power steering content
 
