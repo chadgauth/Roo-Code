@@ -10,6 +10,7 @@ interface ChatTextAreaActionsProps {
 	setInputValue: (value: string) => void
 	onSelectImages: () => void
 	onSend: () => void
+	setIsEnhancingPrompt: (value: boolean) => void
 }
 
 const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
@@ -20,11 +21,13 @@ const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
 	setInputValue,
 	onSelectImages,
 	onSend,
+	setIsEnhancingPrompt,
 }) => {
 	const handleEnhancePrompt = () => {
 		if (!textAreaDisabled) {
 			const trimmedInput = inputValue.trim()
 			if (trimmedInput) {
+				setIsEnhancingPrompt(true)
 				const message = {
 					type: "enhancePrompt" as const,
 					text: trimmedInput,
@@ -55,21 +58,14 @@ const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
 					gap: "2px",
 					flexShrink: 0,
 				}}>
-				{isEnhancingPrompt ? (
-					<span
-						className={`codicon codicon-loading codicon-modifier-spin ${styles["action-button"]}`}
-						style={{ fontSize: 16 }}
-					/>
-				) : (
-					<span
-						role="button"
-						aria-label="enhance prompt"
-						data-testid="enhance-prompt-button"
-						onClick={() => !textAreaDisabled && handleEnhancePrompt()}
-						style={{ fontSize: 16 }}
-						className={`codicon codicon-sparkle ${styles["action-button"]} ${textAreaDisabled ? styles.disabled : ""}`}
-					/>
-				)}
+				<span
+					role="button"
+					aria-label="enhance prompt"
+					data-testid="enhance-prompt-button"
+					onClick={() => !textAreaDisabled && !isEnhancingPrompt && handleEnhancePrompt()}
+					style={{ fontSize: 16 }}
+					className={`codicon codicon-sparkle ${styles["action-button"]} ${styles["codicon-sparkle"]} ${textAreaDisabled ? styles.disabled : ""} ${isEnhancingPrompt ? styles.enhancing : ""}`}
+				/>
 			</div>
 			<span
 				role="button"
