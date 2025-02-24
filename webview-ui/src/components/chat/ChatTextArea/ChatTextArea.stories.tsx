@@ -19,7 +19,7 @@ const meta = {
 } satisfies Meta<typeof ChatTextArea>
 
 export default meta
-type Story = StoryObj<typeof meta>
+type Story = StoryObj<typeof ChatTextArea>
 
 const onHeightChangeSpy = fn()
 
