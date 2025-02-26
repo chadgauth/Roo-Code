@@ -79,7 +79,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			}
 			window.addEventListener("message", messageHandler)
 			return () => window.removeEventListener("message", messageHandler)
-		}, [setInputValue])
+		}, [setInputValue, setIsEnhancingPrompt])
 
 		return (
 			<ChatTextAreaLayout>
@@ -122,6 +122,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							setInputValue={setInputValue}
 							onSelectImages={onSelectImages}
 							onSend={onSend}
+							setIsEnhancingPrompt={setIsEnhancingPrompt}
 						/>
 					),
 				}}

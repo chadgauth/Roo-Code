@@ -55,28 +55,59 @@
 	opacity: 1;
 }
 
-.action-button.disabled {
+.codicon-sparkle {
+	transition: all 0.3s ease;
+	z-index: 1;
+}
+
+.codicon-sparkle:hover {
+	filter: brightness(1.2);
+}
+
+.enhancing {
+	position: relative;
+	background: transparent !important;
+	opacity: 1 !important;
+}
+
+.enhancing::after {
+	content: "";
+	position: absolute;
+	inset: -2px;
+	border-radius: 8px;
+	background: linear-gradient(
+		45deg,
+		var(--vscode-button-background),
+		var(--vscode-textLink-foreground),
+		var(--vscode-symbolIcon-classForeground),
+		var(--vscode-button-background)
+	);
+	background-size: 400% 400%;
+	opacity: 0.08;
+	z-index: 0;
+	animation: border-flow 2s ease-in-out infinite;
+}
+
+@keyframes border-flow {
+	0%,
+	100% {
+		background-position: 0% 50%;
+		opacity: 0.08;
+	}
+	50% {
+		background-position: 100% 50%;
+		opacity: 0.12;
+	}
+}
+
+.disabled:not(.enhancing) {
 	opacity: 0.35;
 	cursor: not-allowed;
 	filter: grayscale(30%);
 }
 
-.action-button.disabled:hover {
+.disabled:not(.enhancing):hover {
 	background-color: transparent;
-}
-
-/* Loading spinner styles */
-.action-button.codicon-loading {
-	animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
 }
 
 /* Desktop styles */
