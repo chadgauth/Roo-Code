@@ -877,7 +877,7 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 	}, [])
 	useEvent("wheel", handleWheel, window, { passive: true }) // passive improves scrolling performance
 
-	const placeholderText = task ? "Type a message..." : "Type your task here...";
+	const placeholderText = task ? "Type a message..." : "Type your task here..."
 	const itemContent = useCallback(
 		(index: number, messageOrGroup: ClineMessage | ClineMessage[]) => {
 			// browser session group
@@ -1052,10 +1052,6 @@ const ChatView = ({ isHidden, showAnnouncement, hideAnnouncement, showHistoryVie
 									style={{ paddingLeft: 1, fontSize: "14px" }}
 								/>
 								MCP Extensions
-							</div>
-							<div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-								<span className="codicon codicon-tools" style={{ fontSize: "14px" }} />
-								Custom Tools
 							</div>
 						</div>
 					</div>
