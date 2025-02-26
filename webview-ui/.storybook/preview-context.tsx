@@ -1,4 +1,5 @@
 import { ExtensionStateContextType, ExtensionStateContext } from "../src/context/ExtensionStateContext"
+import { defaultExtensionState } from "../../src/shared/ExtensionMessage"
 import { McpServer } from "../../src/shared/mcp"
 import { ApiConfiguration, ModelInfo } from "../../src/shared/api"
 import { HistoryItem } from "../../src/shared/HistoryItem" // Import HistoryItem
@@ -51,79 +52,17 @@ const mockOpenedTabs: Array<{ label: string; isActive: boolean; path?: string }>
 ]
 
 const defaultContext: ExtensionStateContextType = {
-	// Version and state
-	version: "1.0.0",
+	...defaultExtensionState,
+	// Override specific properties for testing
+	theme: {},
 	didHydrateState: true,
 	showWelcome: false,
-
-	// Messages and history
-	clineMessages: [],
-	taskHistory: [mockTaskHistoryItem],
-	shouldShowAnnouncement: false,
-
-	// API and models
 	apiConfiguration: mockApiConfig,
-	glamaModels: {},
-	requestyModels: {},
-	openRouterModels: {},
-	unboundModels: {},
-	openAiModels: [],
-
-	// MCP
 	mcpServers: [mockMcpServer],
-	mcpEnabled: true,
-	enableMcpServerCreation: true,
-
-	// Files and tabs
+	taskHistory: [mockTaskHistoryItem],
 	filePaths: mockFilePaths,
 	openedTabs: mockOpenedTabs,
-	currentCheckpoint: undefined,
-
-	// Settings
-	mode: "code",
-	preferredLanguage: "English",
-	requestDelaySeconds: 0,
-	rateLimitSeconds: 0,
-	writeDelayMs: 0,
-	browserViewportSize: "1200x800",
-	screenshotQuality: 75,
-	terminalOutputLineLimit: 500,
-	fuzzyMatchThreshold: 1.0,
-	maxOpenTabsContext: 20,
-
-	// Features
-	diffEnabled: false,
-	checkpointsEnabled: false,
-	soundEnabled: false,
-	soundVolume: 0.5,
-	autoApprovalEnabled: true,
-
-	// Permissions
-	alwaysAllowBrowser: true,
-	alwaysAllowExecute: true,
-	alwaysAllowMcp: true,
-	alwaysAllowModeSwitch: true,
-	alwaysAllowReadOnly: true,
-	alwaysApproveResubmit: true,
-	alwaysAllowWrite: true,
-	allowedCommands: [],
-
-	// Other state
-	customModePrompts: {},
-	customSupportPrompts: {},
-	experiments: {
-		experimentalDiffStrategy: false,
-		search_and_replace: false,
-		insert_content: false,
-		powerSteering: false,
-	},
-	customModes: [],
-	enhancementApiConfigId: undefined,
-	currentApiConfigName: "default",
-	listApiConfigMeta: [],
-	theme: {},
-
-	// Setters
+	// Add setter functions
 	setApiConfiguration: () => {},
 	setCustomInstructions: () => {},
 	setAlwaysAllowReadOnly: () => {},
@@ -151,7 +90,6 @@ const defaultContext: ExtensionStateContextType = {
 	setRateLimitSeconds: () => {},
 	setCurrentApiConfigName: () => {},
 	setListApiConfigMeta: () => {},
-	onUpdateApiConfig: () => {},
 	setMode: () => {},
 	setCustomModePrompts: () => {},
 	setCustomSupportPrompts: () => {},

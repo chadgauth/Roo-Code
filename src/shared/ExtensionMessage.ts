@@ -6,7 +6,7 @@ import { McpServer } from "./mcp"
 import { GitCommit } from "../utils/git"
 import { Mode, CustomModePrompts, ModeConfig } from "./modes"
 import { CustomSupportPrompts } from "./support-prompt"
-import { ExperimentId } from "./experiments"
+import { ExperimentId, experimentDefault } from "./experiments"
 
 export interface LanguageModelChatSelector {
 	vendor?: string
@@ -86,6 +86,11 @@ export interface ApiConfigMeta {
 }
 
 export interface ExtensionState {
+	glamaModels?: Record<string, ModelInfo>
+	requestyModels?: Record<string, ModelInfo>
+	openRouterModels?: Record<string, ModelInfo>
+	unboundModels?: Record<string, ModelInfo>
+	openAiModels?: string[]
 	version: string
 	clineMessages: ClineMessage[]
 	taskHistory: HistoryItem[]
@@ -240,3 +245,42 @@ export interface ClineApiReqInfo {
 }
 
 export type ClineApiReqCancelReason = "streaming_failed" | "user_cancelled"
+
+export const defaultExtensionState: ExtensionState = {
+	version: "1.0.0",
+	clineMessages: [],
+	taskHistory: [],
+	shouldShowAnnouncement: false,
+	allowedCommands: [],
+	soundEnabled: false,
+	soundVolume: 0.5,
+	diffEnabled: false,
+	checkpointsEnabled: false,
+	fuzzyMatchThreshold: 1.0,
+	preferredLanguage: "English",
+	writeDelayMs: 1000,
+	browserViewportSize: "900x600",
+	screenshotQuality: 75,
+	terminalOutputLineLimit: 500,
+	mcpEnabled: true,
+	enableMcpServerCreation: true,
+	alwaysApproveResubmit: false,
+	requestDelaySeconds: 5,
+	rateLimitSeconds: 0,
+	currentApiConfigName: "default",
+	listApiConfigMeta: [],
+	mode: "code",
+	customModePrompts: {},
+	customSupportPrompts: {},
+	experiments: experimentDefault,
+	enhancementApiConfigId: "",
+	autoApprovalEnabled: false,
+	customModes: [],
+	maxOpenTabsContext: 20,
+	cwd: "",
+	glamaModels: {},
+	requestyModels: {},
+	openRouterModels: {},
+	unboundModels: {},
+	openAiModels: [],
+}
