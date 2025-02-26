@@ -12,6 +12,7 @@ import ContextMenu from "../ContextMenu"
 import Thumbnails from "../../common/Thumbnails"
 import { Mode, getAllModes } from "../../../../../src/shared/modes"
 import { MAX_IMAGES_PER_MESSAGE } from "../ChatView"
+import { convertToMentionPath } from "../../../utils/path-mentions"
 import { vscode } from "../../../utils/vscode"
 
 interface ChatTextAreaInputProps {
@@ -24,12 +25,12 @@ interface ChatTextAreaInputProps {
 	setSelectedImages: React.Dispatch<React.SetStateAction<string[]>>
 	onSend: () => void
 	onHeightChange?: (height: number) => void
-	mode: Mode
 	setMode: (value: Mode) => void
 	customModes: any[]
 	filePaths: string[]
 	openedTabs: Array<{ path?: string }>
 	gitCommits: any[]
+	cwd?: string
 }
 
 const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInputProps>(
@@ -44,9 +45,9 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 			setSelectedImages,
 			onSend,
 			onHeightChange,
-			mode,
 			setMode,
 			customModes,
+			cwd,
 			filePaths,
 			openedTabs,
 			gitCommits,
@@ -452,9 +453,13 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 					// Handle text drops
 					const text = e.dataTransfer.getData("text")
 					if (text) {
-						const newValue = inputValue.slice(0, cursorPosition) + text + inputValue.slice(cursorPosition)
+						// Convert the path to a mention-friendly format
+						const mentionText = convertToMentionPath(text, cwd)
+
+						const newValue =
+							inputValue.slice(0, cursorPosition) + mentionText + " " + inputValue.slice(cursorPosition)
 						setInputValue(newValue)
-						const newCursorPosition = cursorPosition + text.length
+						const newCursorPosition = cursorPosition + mentionText.length + 1
 						setCursorPosition(newCursorPosition)
 						setIntendedCursorPosition(newCursorPosition)
 						return
@@ -671,7 +676,7 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 						}}>
 						<span>[@ Context]</span>
 						<span>[/ Modes]</span>
-						{!shouldDisableImages && <span>[⇧ Drag Images]</span>}
+						<span>[⇧ Drag {!shouldDisableImages ? "Files/Images" : "Files"}]</span>
 					</div>
 				)}
 				{selectedImages.length > 0 && (

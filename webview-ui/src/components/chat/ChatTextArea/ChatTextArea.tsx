@@ -4,6 +4,7 @@ import ChatTextAreaInput from "./ChatTextAreaInput"
 import ChatTextAreaSelections from "./ChatTextAreaSelections"
 import ChatTextAreaActions from "./ChatTextAreaActions"
 import { useExtensionState } from "@/context/ExtensionStateContext"
+import { ContextMenuOptionType } from "@/utils/context-mentions"
 import { Mode } from "../../../../../src/shared/modes"
 
 interface ChatTextAreaProps {
@@ -39,9 +40,22 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 		},
 		ref,
 	) => {
-		const { filePaths, openedTabs, currentApiConfigName, listApiConfigMeta, customModes } = useExtensionState()
+		const { filePaths, openedTabs, currentApiConfigName, listApiConfigMeta, customModes, cwd } = useExtensionState()
 		const [gitCommits, setGitCommits] = useState<any[]>([])
 		const [isEnhancingPrompt, setIsEnhancingPrompt] = useState(false)
+		const [showDropdown, setShowDropdown] = useState(false)
+
+		// Close dropdown when clicking outside
+		useEffect(() => {
+			const handleClickOutside = (event: MouseEvent) => {
+				if (showDropdown) {
+					setShowDropdown(false)
+				}
+			}
+			document.addEventListener("mousedown", handleClickOutside)
+			return () => document.removeEventListener("mousedown", handleClickOutside)
+		}, [showDropdown])
+
 
 		// Handle enhanced prompt response
 		useEffect(() => {
@@ -54,7 +68,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 					setIsEnhancingPrompt(false)
 				} else if (message.type === "commitSearchResults") {
 					const commits = message.commits.map((commit: any) => ({
-						type: "git",
+						type: ContextMenuOptionType.Git,
 						value: commit.hash,
 						label: commit.subject,
 						description: `${commit.shortHash} by ${commit.author} on ${commit.date}`,
@@ -81,13 +95,13 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 							setSelectedImages={setSelectedImages}
 							onSend={onSend}
 							onHeightChange={onHeightChange}
-							mode={mode}
 							setMode={setMode}
 							customModes={customModes}
 							filePaths={filePaths}
 							openedTabs={openedTabs}
 							gitCommits={gitCommits}
 							shouldDisableImages={shouldDisableImages}
+							cwd={cwd}
 						/>
 					),
 					selections: (
