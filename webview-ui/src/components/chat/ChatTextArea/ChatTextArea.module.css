@@ -1,0 +1,89 @@
+.footer {
+	display: flex;
+	margin-top: 2px;
+	padding-top: 8px;
+	padding-left: 2px;
+	border-top: 1px solid var(--vscode-widget-border);
+	gap: 10px;
+}
+
+.selections {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	flex: 1 1 auto;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.actions {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	justify-content: flex-end;
+	flex-wrap: wrap;
+}
+
+@media (min-width: 480px) {
+	.footer {
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+	}
+}
+
+.action-button {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	outline: none;
+	opacity: 0.85;
+	padding: 6px;
+	border-radius: 6px;
+	transition: all 0.2s ease;
+	min-width: 28px;
+	min-height: 28px;
+	cursor: pointer;
+	color: var(--vscode-foreground);
+}
+
+.action-button:hover {
+	background-color: color-mix(in srgb, var(--vscode-button-hoverBackground) 40%, transparent);
+	opacity: 1;
+}
+
+.action-button.disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+	filter: grayscale(30%);
+}
+
+.action-button.disabled:hover {
+	background-color: transparent;
+}
+
+/* Loading spinner styles */
+.action-button.codicon-loading {
+	animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+/* Desktop styles */
+@media (min-width: 1024px) {
+	.action-button {
+		padding: 5px;
+		min-width: 26px;
+		min-height: 26px;
+	}
+}
