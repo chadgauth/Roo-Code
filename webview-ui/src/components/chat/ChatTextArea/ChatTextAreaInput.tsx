@@ -6,7 +6,7 @@ import {
 	getContextMenuOptions,
 	insertMention,
 	removeMention,
-	shouldShowContextMenu
+	shouldShowContextMenu,
 } from "../../../utils/context-mentions"
 import ContextMenu from "../ContextMenu"
 import Thumbnails from "../../common/Thumbnails"
@@ -676,8 +676,7 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 						}}>
 						<span>[@ Context]</span>
 						<span>[/ Modes]</span>
-						{/* shouldDisableImages */}
-						{!shouldDisableImages && <span>[⇧ Drag Images]</span>}
+						<span>[⇧ Drag {!shouldDisableImages ? "Files/Images" : "Files"}]</span>
 					</div>
 				)}
 				{selectedImages.length > 0 && (
