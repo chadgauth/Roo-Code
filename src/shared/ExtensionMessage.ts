@@ -255,7 +255,7 @@ export const defaultExtensionState: ExtensionState = {
 	soundEnabled: false,
 	soundVolume: 0.5,
 	diffEnabled: false,
-	checkpointsEnabled: false,
+	enableCheckpoints: true,
 	fuzzyMatchThreshold: 1.0,
 	preferredLanguage: "English",
 	writeDelayMs: 1000,
