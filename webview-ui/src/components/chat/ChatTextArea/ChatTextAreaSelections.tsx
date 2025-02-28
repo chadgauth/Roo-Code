@@ -95,6 +95,7 @@ const ChatTextAreaSelections: React.FC<ChatTextAreaSelectionsProps> = ({
 			<div style={selectContainerStyle}>
 				<select
 					value={mode}
+					title="Select mode for interaction"
 					onChange={(e) => {
 						const value = e.target.value
 						if (value === "prompts-action") {
@@ -137,6 +138,7 @@ const ChatTextAreaSelections: React.FC<ChatTextAreaSelectionsProps> = ({
 			<div style={selectContainerStyle}>
 				<select
 					value={currentApiConfigName || ""}
+					title="Select API configuration"
 					onChange={(e) => {
 						const value = e.target.value
 						if (value === "settings-action") {

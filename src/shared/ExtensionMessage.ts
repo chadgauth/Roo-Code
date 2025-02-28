@@ -116,7 +116,7 @@ export interface ExtensionState {
 	soundEnabled?: boolean
 	soundVolume?: number
 	diffEnabled?: boolean
-	checkpointsEnabled: boolean
+	enableCheckpoints: boolean
 	browserViewportSize?: string
 	screenshotQuality?: number
 	fuzzyMatchThreshold?: number
@@ -255,7 +255,7 @@ export const defaultExtensionState: ExtensionState = {
 	soundEnabled: false,
 	soundVolume: 0.5,
 	diffEnabled: false,
-	checkpointsEnabled: false,
+	enableCheckpoints: true,
 	fuzzyMatchThreshold: 1.0,
 	preferredLanguage: "English",
 	writeDelayMs: 1000,

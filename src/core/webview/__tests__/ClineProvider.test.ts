@@ -653,7 +653,7 @@ describe("ClineProvider", () => {
 			},
 			mode: "code",
 			diffEnabled: true,
-			checkpointsEnabled: false,
+			enableCheckpoints: false,
 			fuzzyMatchThreshold: 1.0,
 			experiments: experimentDefault,
 		} as any)
