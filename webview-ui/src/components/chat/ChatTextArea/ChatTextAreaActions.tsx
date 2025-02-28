@@ -60,7 +60,8 @@ const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
 				}}>
 				<span
 					role="button"
-					aria-label="enhance prompt"
+					aria-label="Enhance prompt with additional context"
+					title="Enhance prompt with additional context"
 					data-testid="enhance-prompt-button"
 					onClick={() => !textAreaDisabled && !isEnhancingPrompt && handleEnhancePrompt()}
 					style={{ fontSize: 16 }}
@@ -69,14 +70,16 @@ const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
 			</div>
 			<span
 				role="button"
-				aria-label="select images"
+				aria-label="Add images to message"
+				title="Add images to message"
 				className={`codicon codicon-device-camera ${styles["action-button"]} ${shouldDisableImages ? styles.disabled : ""}`}
 				onClick={() => !shouldDisableImages && onSelectImages()}
 				style={{ fontSize: 16 }}
 			/>
 			<span
 				role="button"
-				aria-label="send message"
+				aria-label="Send message"
+				title="Send message"
 				className={`codicon codicon-send ${styles["action-button"]} ${textAreaDisabled ? styles.disabled : ""}`}
 				onClick={() => !textAreaDisabled && onSend()}
 				style={{ fontSize: 16 }}

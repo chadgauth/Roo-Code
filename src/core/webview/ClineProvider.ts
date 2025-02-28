@@ -64,7 +64,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 	private cline?: Cline
 	private workspaceTracker?: WorkspaceTracker
 	protected mcpHub?: McpHub // Change from private to protected
-	private latestAnnouncementId = "jan-21-2025-custom-modes" // update to some unique identifier when we add a new announcement
+	private latestAnnouncementId = "feb-27-2025-automatic-checkpoints" // update to some unique identifier when we add a new announcement
 	configManager: ConfigManager
 	customModesManager: CustomModesManager
 
@@ -317,7 +317,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			apiConfiguration,
 			customModePrompts,
 			diffEnabled,
-			checkpointsEnabled,
+			enableCheckpoints,
 			fuzzyMatchThreshold,
 			mode,
 			customInstructions: globalInstructions,
@@ -332,7 +332,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			apiConfiguration,
 			customInstructions: effectiveInstructions,
 			enableDiff: diffEnabled,
-			enableCheckpoints: checkpointsEnabled,
+			enableCheckpoints,
 			fuzzyMatchThreshold,
 			task,
 			images,
@@ -347,7 +347,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			apiConfiguration,
 			customModePrompts,
 			diffEnabled,
-			checkpointsEnabled,
+			enableCheckpoints,
 			fuzzyMatchThreshold,
 			mode,
 			customInstructions: globalInstructions,
@@ -362,7 +362,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			apiConfiguration,
 			customInstructions: effectiveInstructions,
 			enableDiff: diffEnabled,
-			enableCheckpoints: checkpointsEnabled,
+			enableCheckpoints,
 			fuzzyMatchThreshold,
 			historyItem,
 			experiments,
@@ -1017,9 +1017,9 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 						await this.updateGlobalState("diffEnabled", diffEnabled)
 						await this.postStateToWebview()
 						break
-					case "checkpointsEnabled":
-						const checkpointsEnabled = message.bool ?? false
-						await this.updateGlobalState("checkpointsEnabled", checkpointsEnabled)
+					case "enableCheckpoints":
+						const enableCheckpoints = message.bool ?? true
+						await this.updateGlobalState("enableCheckpoints", enableCheckpoints)
 						await this.postStateToWebview()
 						break
 					case "browserViewportSize":
@@ -1651,7 +1651,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			lmStudioModelId,
 			lmStudioBaseUrl,
 			anthropicBaseUrl,
-			anthropicThinking,
 			geminiApiKey,
 			openAiNativeApiKey,
 			deepSeekApiKey,
@@ -1671,6 +1670,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			requestyModelId,
 			requestyModelInfo,
 			modelTemperature,
+			modelMaxTokens,
+			modelMaxThinkingTokens,
 		} = apiConfiguration
 		await Promise.all([
 			this.updateGlobalState("apiProvider", apiProvider),
@@ -1699,7 +1700,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.updateGlobalState("lmStudioModelId", lmStudioModelId),
 			this.updateGlobalState("lmStudioBaseUrl", lmStudioBaseUrl),
 			this.updateGlobalState("anthropicBaseUrl", anthropicBaseUrl),
-			this.updateGlobalState("anthropicThinking", anthropicThinking),
 			this.storeSecret("geminiApiKey", geminiApiKey),
 			this.storeSecret("openAiNativeApiKey", openAiNativeApiKey),
 			this.storeSecret("deepSeekApiKey", deepSeekApiKey),
@@ -1719,6 +1719,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.updateGlobalState("requestyModelId", requestyModelId),
 			this.updateGlobalState("requestyModelInfo", requestyModelInfo),
 			this.updateGlobalState("modelTemperature", modelTemperature),
+			this.updateGlobalState("modelMaxTokens", modelMaxTokens),
+			this.updateGlobalState("anthropicThinking", modelMaxThinkingTokens),
 		])
 		if (this.cline) {
 			this.cline.api = buildApiHandler(apiConfiguration)
@@ -1937,11 +1939,11 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			await fs.unlink(legacyMessagesFilePath)
 		}
 
-		const { checkpointsEnabled } = await this.getState()
+		const { enableCheckpoints } = await this.getState()
 		const baseDir = vscode.workspace.workspaceFolders?.map((folder) => folder.uri.fsPath).at(0)
 
 		// Delete checkpoints branch.
-		if (checkpointsEnabled && baseDir) {
+		if (enableCheckpoints && baseDir) {
 			const branchSummary = await simpleGit(baseDir)
 				.branch(["-D", `roo-code-checkpoints-${id}`])
 				.catch(() => undefined)
@@ -1997,7 +1999,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			alwaysAllowModeSwitch,
 			soundEnabled,
 			diffEnabled,
-			checkpointsEnabled,
+			enableCheckpoints,
 			taskHistory,
 			soundVolume,
 			browserViewportSize,
@@ -2046,7 +2048,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 				.sort((a: HistoryItem, b: HistoryItem) => b.ts - a.ts),
 			soundEnabled: soundEnabled ?? false,
 			diffEnabled: diffEnabled ?? true,
-			checkpointsEnabled: checkpointsEnabled ?? false,
+			enableCheckpoints: enableCheckpoints ?? true,
 			shouldShowAnnouncement: lastShownAnnouncementId !== this.latestAnnouncementId,
 			allowedCommands,
 			soundVolume: soundVolume ?? 0.5,
@@ -2155,7 +2157,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			lmStudioModelId,
 			lmStudioBaseUrl,
 			anthropicBaseUrl,
-			anthropicThinking,
 			geminiApiKey,
 			openAiNativeApiKey,
 			deepSeekApiKey,
@@ -2179,7 +2180,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			allowedCommands,
 			soundEnabled,
 			diffEnabled,
-			checkpointsEnabled,
+			enableCheckpoints,
 			soundVolume,
 			browserViewportSize,
 			fuzzyMatchThreshold,
@@ -2210,6 +2211,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			requestyModelId,
 			requestyModelInfo,
 			modelTemperature,
+			modelMaxTokens,
+			modelMaxThinkingTokens,
 			maxOpenTabsContext,
 		] = await Promise.all([
 			this.getGlobalState("apiProvider") as Promise<ApiProvider | undefined>,
@@ -2238,7 +2241,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("lmStudioModelId") as Promise<string | undefined>,
 			this.getGlobalState("lmStudioBaseUrl") as Promise<string | undefined>,
 			this.getGlobalState("anthropicBaseUrl") as Promise<string | undefined>,
-			this.getGlobalState("anthropicThinking") as Promise<number | undefined>,
 			this.getSecret("geminiApiKey") as Promise<string | undefined>,
 			this.getSecret("openAiNativeApiKey") as Promise<string | undefined>,
 			this.getSecret("deepSeekApiKey") as Promise<string | undefined>,
@@ -2262,7 +2264,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("allowedCommands") as Promise<string[] | undefined>,
 			this.getGlobalState("soundEnabled") as Promise<boolean | undefined>,
 			this.getGlobalState("diffEnabled") as Promise<boolean | undefined>,
-			this.getGlobalState("checkpointsEnabled") as Promise<boolean | undefined>,
+			this.getGlobalState("enableCheckpoints") as Promise<boolean | undefined>,
 			this.getGlobalState("soundVolume") as Promise<number | undefined>,
 			this.getGlobalState("browserViewportSize") as Promise<string | undefined>,
 			this.getGlobalState("fuzzyMatchThreshold") as Promise<number | undefined>,
@@ -2293,6 +2295,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			this.getGlobalState("requestyModelId") as Promise<string | undefined>,
 			this.getGlobalState("requestyModelInfo") as Promise<ModelInfo | undefined>,
 			this.getGlobalState("modelTemperature") as Promise<number | undefined>,
+			this.getGlobalState("modelMaxTokens") as Promise<number | undefined>,
+			this.getGlobalState("anthropicThinking") as Promise<number | undefined>,
 			this.getGlobalState("maxOpenTabsContext") as Promise<number | undefined>,
 		])
 
@@ -2338,7 +2342,6 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 				lmStudioModelId,
 				lmStudioBaseUrl,
 				anthropicBaseUrl,
-				anthropicThinking,
 				geminiApiKey,
 				openAiNativeApiKey,
 				deepSeekApiKey,
@@ -2358,6 +2361,8 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 				requestyModelId,
 				requestyModelInfo,
 				modelTemperature,
+				modelMaxTokens,
+				modelMaxThinkingTokens,
 			},
 			lastShownAnnouncementId,
 			customInstructions,
@@ -2371,7 +2376,7 @@ export class ClineProvider implements vscode.WebviewViewProvider {
 			allowedCommands,
 			soundEnabled: soundEnabled ?? false,
 			diffEnabled: diffEnabled ?? true,
-			checkpointsEnabled: checkpointsEnabled ?? false,
+			enableCheckpoints: enableCheckpoints ?? true,
 			soundVolume,
 			browserViewportSize: browserViewportSize ?? "900x600",
 			screenshotQuality: screenshotQuality ?? 75,
