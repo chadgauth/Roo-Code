@@ -432,6 +432,7 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 
 		return (
 			<div
+				className="chat-text-area"
 				style={{
 					position: "relative",
 					display: "flex",
@@ -461,22 +462,17 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 							let newValue = inputValue.slice(0, cursorPosition)
 							let totalLength = 0
 
-							lines.forEach((line, index) => {
+							for (const line of lines) {
 								// Convert each path to a mention-friendly format
-								const mentionText = convertToMentionPath(line, cwd)
-								newValue += mentionText
-								totalLength += mentionText.length
+								const mentionPath = convertToMentionPath(line, cwd)
+								// If the path is unchanged (outside cwd), use it as is
+								const formattedPath = mentionPath === line ? line : mentionPath
+								newValue += formattedPath + " "
+								totalLength += formattedPath.length + 1
+							}
 
-								// Add space after each mention except the last one
-								if (index < lines.length - 1) {
-									newValue += " "
-									totalLength += 1
-								}
-							})
-
-							// Add space after the last mention and append the rest of the input
-							newValue += " " + inputValue.slice(cursorPosition)
-							totalLength += 1
+							// Append the rest of the input without extra space
+							newValue = newValue.trimEnd() + " " + inputValue.slice(cursorPosition).trimStart()
 
 							setInputValue(newValue)
 							const newCursorPosition = cursorPosition + totalLength

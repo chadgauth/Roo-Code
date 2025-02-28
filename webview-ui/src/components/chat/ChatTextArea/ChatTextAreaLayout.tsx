@@ -12,7 +12,6 @@ interface ChatTextAreaLayoutProps {
 const ChatTextAreaLayout: React.FC<ChatTextAreaLayoutProps> = ({ children: { input, selections, actions } }) => {
 	return (
 		<div
-			className="chat-text-area"
 			style={{
 				position: "relative",
 				display: "flex",
