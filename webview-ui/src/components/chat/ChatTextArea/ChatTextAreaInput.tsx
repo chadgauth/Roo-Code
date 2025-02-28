@@ -453,13 +453,17 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 					// Handle text drops
 					const text = e.dataTransfer.getData("text")
 					if (text) {
-						// Convert the path to a mention-friendly format
-						const mentionText = convertToMentionPath(text, cwd)
+						const paths = text.split(/\r?\n/).filter((path) => path.trim())
+						const mentionTexts = paths.map((path) => convertToMentionPath(path, cwd))
+						const combinedMentionText = mentionTexts.join(" ")
 
 						const newValue =
-							inputValue.slice(0, cursorPosition) + mentionText + " " + inputValue.slice(cursorPosition)
+							inputValue.slice(0, cursorPosition) +
+							combinedMentionText +
+							" " +
+							inputValue.slice(cursorPosition)
 						setInputValue(newValue)
-						const newCursorPosition = cursorPosition + mentionText.length + 1
+						const newCursorPosition = cursorPosition + combinedMentionText.length + 1
 						setCursorPosition(newCursorPosition)
 						setIntendedCursorPosition(newCursorPosition)
 						return
