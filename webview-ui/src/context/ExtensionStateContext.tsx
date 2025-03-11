@@ -2,9 +2,9 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { useEvent } from "react-use"
 import {
 	ApiConfigMeta,
+	defaultExtensionState,
 	ExtensionMessage,
 	ExtensionState,
-	defaultExtensionState,
 } from "../../../src/shared/ExtensionMessage"
 import { ApiConfiguration, ModelInfo } from "../../../src/shared/api"
 import { vscode } from "../utils/vscode"
@@ -15,6 +15,7 @@ import { checkExistKey } from "../../../src/shared/checkExistApiConfig"
 import { Mode, CustomModePrompts, ModeConfig } from "../../../src/shared/modes"
 import { CustomSupportPrompts } from "../../../src/shared/support-prompt"
 import { ExperimentId } from "../../../src/shared/experiments"
+import { TelemetrySetting } from "../../../src/shared/TelemetrySetting"
 
 export interface ExtensionStateContextType extends ExtensionState {
 	didHydrateState: boolean
@@ -32,6 +33,9 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setAlwaysAllowBrowser: (value: boolean) => void
 	setAlwaysAllowMcp: (value: boolean) => void
 	setAlwaysAllowModeSwitch: (value: boolean) => void
+	setAlwaysAllowSubtasks: (value: boolean) => void
+	setBrowserToolEnabled: (value: boolean) => void
+	setShowRooIgnoredFiles: (value: boolean) => void
 	setShowAnnouncement: (value: boolean) => void
 	setAllowedCommands: (value: string[]) => void
 	setSoundEnabled: (value: boolean) => void
@@ -45,12 +49,14 @@ export interface ExtensionStateContextType extends ExtensionState {
 	setWriteDelayMs: (value: number) => void
 	screenshotQuality?: number
 	setScreenshotQuality: (value: number) => void
-	terminalOutputLineLimit?: number
-	setTerminalOutputLineLimit: (value: number) => void
+	terminalOutputLimit?: number
+	setTerminalOutputLimit: (value: number) => void
 	mcpEnabled: boolean
 	setMcpEnabled: (value: boolean) => void
 	enableMcpServerCreation: boolean
 	setEnableMcpServerCreation: (value: boolean) => void
+	enableCustomModeCreation?: boolean
+	setEnableCustomModeCreation: (value: boolean) => void
 	alwaysApproveResubmit?: boolean
 	setAlwaysApproveResubmit: (value: boolean) => void
 	requestDelaySeconds: number
@@ -75,9 +81,39 @@ export interface ExtensionStateContextType extends ExtensionState {
 	customModes: ModeConfig[]
 	setCustomModes: (value: ModeConfig[]) => void
 	setMaxOpenTabsContext: (value: number) => void
+	setTelemetrySetting: (value: TelemetrySetting) => void
+	remoteBrowserEnabled?: boolean
+	setRemoteBrowserEnabled: (value: boolean) => void
+	machineId?: string
 }
 
 export const ExtensionStateContext = createContext<ExtensionStateContextType | undefined>(undefined)
+
+export const mergeExtensionState = (prevState: ExtensionState, newState: ExtensionState) => {
+	const {
+		apiConfiguration: prevApiConfiguration,
+		customModePrompts: prevCustomModePrompts,
+		customSupportPrompts: prevCustomSupportPrompts,
+		experiments: prevExperiments,
+		...prevRest
+	} = prevState
+
+	const {
+		apiConfiguration: newApiConfiguration,
+		customModePrompts: newCustomModePrompts,
+		customSupportPrompts: newCustomSupportPrompts,
+		experiments: newExperiments,
+		...newRest
+	} = newState
+
+	const apiConfiguration = { ...prevApiConfiguration, ...newApiConfiguration }
+	const customModePrompts = { ...prevCustomModePrompts, ...newCustomModePrompts }
+	const customSupportPrompts = { ...prevCustomSupportPrompts, ...newCustomSupportPrompts }
+	const experiments = { ...prevExperiments, ...newExperiments }
+	const rest = { ...prevRest, ...newRest }
+
+	return { ...rest, apiConfiguration, customModePrompts, customSupportPrompts, experiments }
+}
 
 export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [state, setState] = useState<ExtensionState>(defaultExtensionState)
@@ -101,13 +137,8 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 			switch (message.type) {
 				case "state": {
 					const newState = message.state!
-					setState((prevState) => ({
-						...prevState,
-						...newState,
-					}))
-					const config = newState.apiConfiguration
-					const hasKey = checkExistKey(config)
-					setShowWelcome(!hasKey)
+					setState((prevState) => mergeExtensionState(prevState, newState))
+					setShowWelcome(!checkExistKey(newState.apiConfiguration))
 					setDidHydrateState(true)
 					break
 				}
@@ -192,6 +223,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setAlwaysAllowBrowser: (value) => setState((prevState) => ({ ...prevState, alwaysAllowBrowser: value })),
 		setAlwaysAllowMcp: (value) => setState((prevState) => ({ ...prevState, alwaysAllowMcp: value })),
 		setAlwaysAllowModeSwitch: (value) => setState((prevState) => ({ ...prevState, alwaysAllowModeSwitch: value })),
+		setAlwaysAllowSubtasks: (value) => setState((prevState) => ({ ...prevState, alwaysAllowSubtasks: value })),
 		setShowAnnouncement: (value) => setState((prevState) => ({ ...prevState, shouldShowAnnouncement: value })),
 		setAllowedCommands: (value) => setState((prevState) => ({ ...prevState, allowedCommands: value })),
 		setSoundEnabled: (value) => setState((prevState) => ({ ...prevState, soundEnabled: value })),
@@ -204,8 +236,7 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setPreferredLanguage: (value) => setState((prevState) => ({ ...prevState, preferredLanguage: value })),
 		setWriteDelayMs: (value) => setState((prevState) => ({ ...prevState, writeDelayMs: value })),
 		setScreenshotQuality: (value) => setState((prevState) => ({ ...prevState, screenshotQuality: value })),
-		setTerminalOutputLineLimit: (value) =>
-			setState((prevState) => ({ ...prevState, terminalOutputLineLimit: value })),
+		setTerminalOutputLimit: (value) => setState((prevState) => ({ ...prevState, terminalOutputLimit: value })),
 		setMcpEnabled: (value) => setState((prevState) => ({ ...prevState, mcpEnabled: value })),
 		setEnableMcpServerCreation: (value) =>
 			setState((prevState) => ({ ...prevState, enableMcpServerCreation: value })),
@@ -219,9 +250,15 @@ export const ExtensionStateContextProvider: React.FC<{ children: React.ReactNode
 		setCustomSupportPrompts: (value) => setState((prevState) => ({ ...prevState, customSupportPrompts: value })),
 		setEnhancementApiConfigId: (value) =>
 			setState((prevState) => ({ ...prevState, enhancementApiConfigId: value })),
+		setEnableCustomModeCreation: (value) =>
+			setState((prevState) => ({ ...prevState, enableCustomModeCreation: value })),
 		setAutoApprovalEnabled: (value) => setState((prevState) => ({ ...prevState, autoApprovalEnabled: value })),
 		setCustomModes: (value) => setState((prevState) => ({ ...prevState, customModes: value })),
 		setMaxOpenTabsContext: (value) => setState((prevState) => ({ ...prevState, maxOpenTabsContext: value })),
+		setBrowserToolEnabled: (value) => setState((prevState) => ({ ...prevState, browserToolEnabled: value })),
+		setTelemetrySetting: (value) => setState((prevState) => ({ ...prevState, telemetrySetting: value })),
+		setShowRooIgnoredFiles: (value) => setState((prevState) => ({ ...prevState, showRooIgnoredFiles: value })),
+		setRemoteBrowserEnabled: (value) => setState((prevState) => ({ ...prevState, remoteBrowserEnabled: value })),
 	}
 
 	return <ExtensionStateContext.Provider value={contextValue}>{children}</ExtensionStateContext.Provider>
