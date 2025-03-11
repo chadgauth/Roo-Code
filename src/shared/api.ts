@@ -16,6 +16,7 @@ export type ApiProvider =
 	| "mistral"
 	| "unbound"
 	| "requesty"
+	| "human-relay"
 
 export interface ApiHandlerOptions {
 	apiModelId?: string
@@ -38,6 +39,9 @@ export interface ApiHandlerOptions {
 	awspromptCacheId?: string
 	awsProfile?: string
 	awsUseProfile?: boolean
+	awsCustomArn?: string
+	vertexKeyFile?: string
+	vertexJsonCredentials?: string
 	vertexProjectId?: string
 	vertexRegion?: string
 	openAiBaseUrl?: string
@@ -49,6 +53,8 @@ export interface ApiHandlerOptions {
 	ollamaBaseUrl?: string
 	lmStudioModelId?: string
 	lmStudioBaseUrl?: string
+	lmStudioDraftModelId?: string
+	lmStudioSpeculativeDecodingEnabled?: boolean
 	geminiApiKey?: string
 	openAiNativeApiKey?: string
 	mistralApiKey?: string
@@ -56,7 +62,6 @@ export interface ApiHandlerOptions {
 	azureApiVersion?: string
 	openRouterUseMiddleOutTransform?: boolean
 	openAiStreamingEnabled?: boolean
-	setAzureApiVersion?: boolean
 	deepSeekBaseUrl?: string
 	deepSeekApiKey?: string
 	includeMaxTokens?: boolean
@@ -66,7 +71,7 @@ export interface ApiHandlerOptions {
 	requestyApiKey?: string
 	requestyModelId?: string
 	requestyModelInfo?: ModelInfo
-	modelTemperature?: number
+	modelTemperature?: number | null
 	modelMaxTokens?: number
 	modelMaxThinkingTokens?: number
 }
@@ -75,6 +80,55 @@ export type ApiConfiguration = ApiHandlerOptions & {
 	apiProvider?: ApiProvider
 	id?: string // stable unique identifier
 }
+
+// Import GlobalStateKey type from globalState.ts
+import { GlobalStateKey } from "./globalState"
+
+// Define API configuration keys for dynamic object building
+export const API_CONFIG_KEYS: GlobalStateKey[] = [
+	"apiModelId",
+	"anthropicBaseUrl",
+	"vsCodeLmModelSelector",
+	"glamaModelId",
+	"glamaModelInfo",
+	"openRouterModelId",
+	"openRouterModelInfo",
+	"openRouterBaseUrl",
+	"awsRegion",
+	"awsUseCrossRegionInference",
+	// "awsUsePromptCache", // NOT exist on GlobalStateKey
+	// "awspromptCacheId", // NOT exist on GlobalStateKey
+	"awsProfile",
+	"awsUseProfile",
+	"awsCustomArn",
+	"vertexKeyFile",
+	"vertexJsonCredentials",
+	"vertexProjectId",
+	"vertexRegion",
+	"openAiBaseUrl",
+	"openAiModelId",
+	"openAiCustomModelInfo",
+	"openAiUseAzure",
+	"ollamaModelId",
+	"ollamaBaseUrl",
+	"lmStudioModelId",
+	"lmStudioBaseUrl",
+	"lmStudioDraftModelId",
+	"lmStudioSpeculativeDecodingEnabled",
+	"mistralCodestralUrl",
+	"azureApiVersion",
+	"openRouterUseMiddleOutTransform",
+	"openAiStreamingEnabled",
+	// "deepSeekBaseUrl", //  not exist on GlobalStateKey
+	// "includeMaxTokens", // not exist on GlobalStateKey
+	"unboundModelId",
+	"unboundModelInfo",
+	"requestyModelId",
+	"requestyModelInfo",
+	"modelTemperature",
+	"modelMaxTokens",
+	"modelMaxThinkingTokens",
+]
 
 // Models
 
@@ -99,7 +153,7 @@ export type AnthropicModelId = keyof typeof anthropicModels
 export const anthropicDefaultModelId: AnthropicModelId = "claude-3-7-sonnet-20250219"
 export const anthropicModels = {
 	"claude-3-7-sonnet-20250219:thinking": {
-		maxTokens: 64_000,
+		maxTokens: 128_000,
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsComputerUse: true,
@@ -111,7 +165,7 @@ export const anthropicModels = {
 		thinking: true,
 	},
 	"claude-3-7-sonnet-20250219": {
-		maxTokens: 64_000,
+		maxTokens: 16_384,
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsComputerUse: true,
@@ -436,8 +490,56 @@ export const openRouterDefaultModelInfo: ModelInfo = {
 export type VertexModelId = keyof typeof vertexModels
 export const vertexDefaultModelId: VertexModelId = "claude-3-7-sonnet@20250219"
 export const vertexModels = {
+	"gemini-2.0-flash-001": {
+		maxTokens: 8192,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.15,
+		outputPrice: 0.6,
+	},
+	"gemini-2.0-pro-exp-02-05": {
+		maxTokens: 8192,
+		contextWindow: 2_097_152,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemini-2.0-flash-lite-001": {
+		maxTokens: 8192,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.075,
+		outputPrice: 0.3,
+	},
+	"gemini-2.0-flash-thinking-exp-01-21": {
+		maxTokens: 8192,
+		contextWindow: 32_768,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0,
+		outputPrice: 0,
+	},
+	"gemini-1.5-flash-002": {
+		maxTokens: 8192,
+		contextWindow: 1_048_576,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 0.075,
+		outputPrice: 0.3,
+	},
+	"gemini-1.5-pro-002": {
+		maxTokens: 8192,
+		contextWindow: 2_097_152,
+		supportsImages: true,
+		supportsPromptCache: false,
+		inputPrice: 1.25,
+		outputPrice: 5,
+	},
 	"claude-3-7-sonnet@20250219:thinking": {
-		maxTokens: 64000,
+		maxTokens: 64_000,
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsComputerUse: true,
@@ -449,7 +551,7 @@ export const vertexModels = {
 		thinking: true,
 	},
 	"claude-3-7-sonnet@20250219": {
-		maxTokens: 8192,
+		maxTokens: 16_384,
 		contextWindow: 200_000,
 		supportsImages: true,
 		supportsComputerUse: true,
@@ -726,19 +828,23 @@ export const deepSeekModels = {
 		maxTokens: 8192,
 		contextWindow: 64_000,
 		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.014, // $0.014 per million tokens
-		outputPrice: 0.28, // $0.28 per million tokens
+		supportsPromptCache: true,
+		inputPrice: 0.27, // $0.27 per million tokens (cache miss)
+		outputPrice: 1.1, // $1.10 per million tokens
+		cacheWritesPrice: 0.27, // $0.27 per million tokens (cache miss)
+		cacheReadsPrice: 0.07, // $0.07 per million tokens (cache hit).
 		description: `DeepSeek-V3 achieves a significant breakthrough in inference speed over previous models. It tops the leaderboard among open-source models and rivals the most advanced closed-source models globally.`,
 	},
 	"deepseek-reasoner": {
 		maxTokens: 8192,
 		contextWindow: 64_000,
 		supportsImages: false,
-		supportsPromptCache: false,
-		inputPrice: 0.55, // $0.55 per million tokens
+		supportsPromptCache: true,
+		inputPrice: 0.55, // $0.55 per million tokens (cache miss)
 		outputPrice: 2.19, // $2.19 per million tokens
-		description: `DeepSeek-R1 achieves performance comparable to OpenAI-o1 across math, code, and reasoning tasks.`,
+		cacheWritesPrice: 0.55, // $0.55 per million tokens (cache miss)
+		cacheReadsPrice: 0.14, // $0.14 per million tokens (cache hit)
+		description: `DeepSeek-R1 achieves performance comparable to OpenAI-o1 across math, code, and reasoning tasks. Supports Chain of Thought reasoning with up to 32K tokens.`,
 	},
 } as const satisfies Record<string, ModelInfo>
 

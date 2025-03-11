@@ -36,6 +36,7 @@ describe("ChatTextArea", () => {
 		onHeightChange: jest.fn(),
 		mode: defaultModeSlug,
 		setMode: jest.fn(),
+		modeShortcutText: "(⌘. for next mode)",
 	}
 
 	beforeEach(() => {

@@ -273,6 +273,14 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 			],
 		)
 
+		const handleBlur = useCallback(() => {
+			setIsFocused(false)
+			if (!isMouseDownOnMenu) {
+				setTimeout(() => setShowContextMenu(false), 100)
+			}
+			setIsMouseDownOnMenu(false)
+		}, [isMouseDownOnMenu])
+
 		useLayoutEffect(() => {
 			if (intendedCursorPosition !== null && textAreaRef.current) {
 				textAreaRef.current.setSelectionRange(intendedCursorPosition, intendedCursorPosition)
@@ -429,11 +437,11 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 			},
 			[updateCursorPosition],
 		)
-
 		return (
 			<div
 				className="chat-text-area"
 				style={{
+					opacity: textAreaDisabled ? 0.5 : 1,
 					position: "relative",
 					display: "flex",
 					flexDirection: "column",
@@ -448,10 +456,8 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 				}}
 				onDrop={async (e) => {
 					e.preventDefault()
-					e.stopPropagation()
 					setIsDraggingOver(false)
-
-					// Handle text drops
+					const files = Array.from(e.dataTransfer.files)
 					const text = e.dataTransfer.getData("text")
 					if (text) {
 						// Split text on newlines to handle multiple files
@@ -462,17 +468,24 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 							let newValue = inputValue.slice(0, cursorPosition)
 							let totalLength = 0
 
+							let index = 0
 							for (const line of lines) {
 								// Convert each path to a mention-friendly format
-								const mentionPath = convertToMentionPath(line, cwd)
-								// If the path is unchanged (outside cwd), use it as is
-								const formattedPath = mentionPath === line ? line : mentionPath
-								newValue += formattedPath + " "
-								totalLength += formattedPath.length + 1
+								const mentionText = convertToMentionPath(line, cwd)
+								newValue += mentionText
+								totalLength += mentionText.length
+
+								// Add space after each mention except the last one
+								if (index < lines.length - 1) {
+									newValue += " "
+									totalLength += 1
+								}
+								index++
 							}
 
-							// Append the rest of the input without extra space
-							newValue = newValue.trimEnd() + " " + inputValue.slice(cursorPosition).trimStart()
+							// Add space after the last mention and append the rest of the input
+							newValue += " " + inputValue.slice(cursorPosition)
+							totalLength += 1
 
 							setInputValue(newValue)
 							const newCursorPosition = cursorPosition + totalLength
@@ -482,61 +495,48 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 						return
 					}
 
-					// Handle file drops
-					const files = Array.from(e.dataTransfer.files)
-					if (!textAreaDisabled && files.length > 0) {
-						const acceptedTypes = ["png", "jpeg", "webp"]
-						const imageFiles = files.filter((file) => {
-							const [type, subtype] = file.type.split("/")
-							return type === "image" && acceptedTypes.includes(subtype)
-						})
+					const acceptedTypes = ["png", "jpeg", "webp"]
+					const imageFiles = files.filter((file) => {
+						const [type, subtype] = file.type.split("/")
+						return type === "image" && acceptedTypes.includes(subtype)
+					})
 
-						if (imageFiles.length > 0) {
-							try {
-								const imagePromises = imageFiles.map(
-									(file) =>
-										new Promise<string | null>((resolve) => {
-											const reader = new FileReader()
-											reader.onloadend = () => {
-												if (reader.error) {
-													console.error("Error reading file:", reader.error)
-													resolve(null)
-												} else {
-													resolve(typeof reader.result === "string" ? reader.result : null)
-												}
-											}
-											reader.readAsDataURL(file)
-										}),
-								)
-
-								const imageDataArray = await Promise.all(imagePromises)
-								const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
-								if (dataUrls.length > 0) {
-									setSelectedImages((prevImages) =>
-										[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
-									)
-									if (typeof vscode !== "undefined") {
-										vscode.postMessage({
-											type: "draggedImages",
-											dataUrls: dataUrls,
-										})
+					if (!shouldDisableImages && imageFiles.length > 0) {
+						const imagePromises = imageFiles.map((file) => {
+							return new Promise<string | null>((resolve) => {
+								const reader = new FileReader()
+								reader.onloadend = () => {
+									if (reader.error) {
+										console.error("Error reading file:", reader.error)
+										resolve(null)
+									} else {
+										const result = reader.result
+										resolve(typeof result === "string" ? result : null)
 									}
 								}
-							} catch (error) {
-								console.error("Error processing dropped images:", error)
+								reader.readAsDataURL(file)
+							})
+						})
+						const imageDataArray = await Promise.all(imagePromises)
+						const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
+						if (dataUrls.length > 0) {
+							setSelectedImages((prevImages) =>
+								[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
+							)
+							if (typeof vscode !== "undefined") {
+								vscode.postMessage({
+									type: "draggedImages",
+									dataUrls: dataUrls,
+								})
 							}
+						} else {
+							console.warn("No valid images were processed")
 						}
 					}
 				}}
 				onDragOver={(e) => {
 					e.preventDefault()
-					e.stopPropagation()
 					setIsDraggingOver(true)
-					e.dataTransfer.dropEffect = "copy"
-				}}
-				onDragEnter={(e) => {
-					e.preventDefault()
-					e.stopPropagation()
 				}}
 				onDragLeave={(e) => {
 					e.preventDefault()
@@ -598,9 +598,9 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 							fontFamily: "var(--vscode-font-family)",
 							fontSize: "var(--vscode-editor-font-size)",
 							lineHeight: "var(--vscode-editor-line-height)",
-							padding: "8px",
-							paddingRight: "16px",
-							marginBottom: thumbnailsHeight > 0 ? `${thumbnailsHeight}px` : 0,
+							padding: "2px",
+							paddingRight: "8px",
+							marginBottom: thumbnailsHeight > 0 ? `${thumbnailsHeight + 16}px` : 0,
 							zIndex: 1,
 						}}
 					/>
@@ -615,7 +615,10 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 						}}
 						value={inputValue}
 						disabled={textAreaDisabled}
-						onChange={handleInputChange}
+						onChange={(e) => {
+							handleInputChange(e)
+							updateHighlights()
+						}}
 						onFocus={() => {
 							setIsFocused(true)
 							if (inputValue === "@" || inputValue === "/") {
@@ -624,15 +627,9 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 								setSelectedMenuIndex(inputValue === "/" ? 0 : 3)
 							}
 						}}
-						onBlur={(e) => {
-							setIsFocused(false)
-							if (!isMouseDownOnMenu) {
-								setTimeout(() => setShowContextMenu(false), 100)
-							}
-							setIsMouseDownOnMenu(false)
-						}}
 						onKeyDown={handleKeyDown}
 						onKeyUp={handleKeyUp}
+						onBlur={handleBlur}
 						onPaste={handlePaste}
 						onSelect={updateCursorPosition}
 						onMouseUp={updateCursorPosition}
@@ -654,7 +651,7 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 								? "color-mix(in srgb, var(--vscode-editor-background) 95%, var(--vscode-focusBorder))"
 								: "var(--vscode-editor-background)",
 							color: "var(--vscode-editor-foreground)",
-							borderRadius: 5,
+							borderRadius: 3,
 							fontFamily: "var(--vscode-font-family)",
 							fontSize: "var(--vscode-editor-font-size)",
 							lineHeight: "var(--vscode-editor-line-height)",
@@ -662,8 +659,8 @@ const ChatTextAreaInput = React.forwardRef<HTMLTextAreaElement, ChatTextAreaInpu
 							overflowX: "hidden",
 							overflowY: "auto",
 							border: "none",
-							padding: "8px",
-							paddingRight: "16px",
+							padding: "5px",
+							paddingRight: "12px",
 							marginBottom: thumbnailsHeight > 0 ? `${thumbnailsHeight + 16}px` : 0,
 							cursor: textAreaDisabled ? "not-allowed" : "text",
 							flex: "0 1 auto",
