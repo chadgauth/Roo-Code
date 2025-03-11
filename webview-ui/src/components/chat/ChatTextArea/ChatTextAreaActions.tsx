@@ -23,7 +23,7 @@ const baseActionButton = [
 	"hover:opacity-75",
 ]
 
-const disabledButton = "opacity-35 cursor-not-allowed grayscale-[30%] hover:bg-transparent"
+const disabledButton = "disabled opacity-35 cursor-not-allowed grayscale-[30%] hover:bg-transparent"
 
 const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
 	textAreaDisabled,
@@ -68,15 +68,16 @@ const ChatTextAreaActions: React.FC<ChatTextAreaActionsProps> = ({
 						"transition-all duration-300 z-[1] hover:brightness-120",
 						textAreaDisabled && disabledButton,
 						isEnhancingPrompt && [
-							"!bg-transparent !opacity-100",
-							"after:content-[''] after:absolute after:inset-[-2px]",
-							"after:rounded-lg after:bg-gradient-to-r",
-							"after:from-vscode-button-background",
-							"after:via-vscode-textLink-foreground",
-							"after:via-vscode-symbolIcon-classForeground",
-							"after:to-vscode-button-background",
-							"after:bg-[length:400%_400%] after:opacity-[0.08]",
-							"after:z-0 after:animate-border-flow",
+							"enhancing",
+							"!opacity-100 disabled cursor-progress",
+							"bg-gradient-to-r",
+							"from-vscode-button-background from-10%",
+							"via-[color:color-mix(in_srgb,var(--vscode-charts-yellow)_40%,var(--vscode-button-background))]",
+							"via-50%",
+							"to-vscode-button-background",
+							"to-90%",
+							"bg-[length:300%_100%]",
+							"animate-border-flow",
 						],
 					)}
 				/>
