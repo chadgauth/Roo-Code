@@ -6,7 +6,7 @@ import { Mode, CustomModePrompts, ModeConfig, defaultModeSlug, defaultPrompts } 
 import { CustomSupportPrompts } from "./support-prompt"
 import { experimentDefault, ExperimentId } from "./experiments"
 import { TERMINAL_OUTPUT_LIMIT } from "./terminal"
-import { ClineMessage } from "../exports/roo-code"
+import { ClineMessage, ClineAsk, ClineSay } from "../exports/roo-code"
 import { CheckpointStorage } from "./checkpoints"
 import { TelemetrySetting } from "./TelemetrySetting"
 
@@ -158,7 +158,7 @@ export interface ExtensionState {
 	showRooIgnoredFiles: boolean // Whether to show .rooignore'd files in listings
 }
 
-export type { ClineMessage }
+export type { ClineMessage, ClineAsk, ClineSay }
 
 export interface ClineSayTool {
 	tool:
