@@ -6,9 +6,7 @@ import {
 	ExtensionMessage,
 	ExtensionState,
 } from "../../../src/shared/ExtensionMessage"
-import { ApiConfiguration, ModelInfo } from "../../../src/shared/api"
-import { vscode } from "../utils/vscode"
-import { convertTextMateToHljs } from "../utils/textMateToHljs"
+import { ApiConfiguration } from "../../../src/shared/api"
 import { findLastIndex } from "../../../src/shared/array"
 import { McpServer } from "../../../src/shared/mcp"
 import { checkExistKey } from "../../../src/shared/checkExistApiConfig"
@@ -16,6 +14,9 @@ import { Mode, CustomModePrompts, ModeConfig } from "../../../src/shared/modes"
 import { CustomSupportPrompts } from "../../../src/shared/support-prompt"
 import { ExperimentId } from "../../../src/shared/experiments"
 import { TelemetrySetting } from "../../../src/shared/TelemetrySetting"
+
+import { vscode } from "@/utils/vscode"
+import { convertTextMateToHljs } from "@/utils/textMateToHljs"
 
 export interface ExtensionStateContextType extends ExtensionState {
 	didHydrateState: boolean

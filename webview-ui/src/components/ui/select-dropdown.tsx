@@ -77,9 +77,7 @@ export const SelectDropdown = React.forwardRef<React.ElementRef<typeof DropdownM
 		}
 
 		return (
-			<div
-				className="relative inline-block min-w-0 flex-[0_1_auto]" // Select container styles
-			>
+			<div className="relative inline-block min-w-0 flex-[0_1_auto]">
 				<DropdownMenu open={open} onOpenChange={setOpen}>
 					<DropdownMenuTrigger
 						ref={ref}
@@ -95,14 +93,12 @@ export const SelectDropdown = React.forwardRef<React.ElementRef<typeof DropdownM
 							triggerClassName,
 						)}
 						style={{
-							width: "100%", // Take full width of parent.
+							width: "100%",
 							minWidth: "0",
 							maxWidth: "100%",
 						}}>
 						{shouldShowCaret && (
-							<div
-								className="pointer-events-none opacity-60 text-[10px]" // Caret container styles
-							>
+							<div className="pointer-events-none opacity-60 text-[10px]">
 								<svg
 									fill="none"
 									height="10"
