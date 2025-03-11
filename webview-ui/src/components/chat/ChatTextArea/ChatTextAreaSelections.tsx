@@ -21,16 +21,7 @@ const ChatTextAreaSelections: React.FC<ChatTextAreaSelectionsProps> = ({
 	modeShortcutText,
 }) => {
 	return (
-		<div
-			style={{
-				display: "flex",
-				alignItems: "center",
-				gap: "4px",
-				fontSize: "12px",
-				minWidth: 0, // Allow container to shrink
-				flex: "1 1 auto", // Allow growing and shrinking
-				flexWrap: "wrap", // Allow wrapping on small screens
-			}}>
+		<div className="flex items-center gap-1 text-xs min-w-0 flex-1 flex-wrap">
 			{/* Editor Mode Dropdown */}
 			<SelectDropdown
 				value={mode}

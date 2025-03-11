@@ -5,7 +5,6 @@ import { useDeepCompareEffect, useEvent, useMount } from "react-use"
 import { Virtuoso, type VirtuosoHandle } from "react-virtuoso"
 import styled from "styled-components"
 import {
-	ClineAsk,
 	ClineMessage,
 	ClineSayBrowserAction,
 	ClineSayTool,
@@ -30,6 +29,7 @@ import { AudioType } from "../../../../src/shared/WebviewMessage"
 import { validateCommand } from "../../utils/command-validation"
 import { getAllModes } from "../../../../src/shared/modes"
 import TelemetryBanner from "../common/TelemetryBanner"
+import { ClineAsk } from "../../../../src/exports/roo-code"
 
 interface ChatViewProps {
 	isHidden: boolean

@@ -76,23 +76,6 @@ export const SelectDropdown = React.forwardRef<React.ElementRef<typeof DropdownM
 			setOpen(false)
 		}
 
-		// const caretContainerStyle = {
-		// 	position: "absolute" as const,
-		// 	right: 4,
-		// 	top: "50%",
-		// 	transform: "translateY(-45%)",
-		// 	pointerEvents: "none" as const,
-		// 	opacity: 0.6,
-		// 	fontSize: "10px", // Slightly smaller caret
-		// }
-
-		// const selectContainerStyle = {
-		// 	position: "relative" as const,
-		// 	display: "inline-block",
-		// 	minWidth: 0, // Allow container to shrink
-		// 	flex: "0 1 auto", // Allow shrinking but not growing
-		// }
-
 		return (
 			<div
 				className="relative inline-block min-w-0 flex-[0_1_auto]" // Select container styles
@@ -108,7 +91,7 @@ export const SelectDropdown = React.forwardRef<React.ElementRef<typeof DropdownM
 							"text-vscode-input-foreground px-2 py-1 min-h-[20px] max-w-[120px] truncate",
 							"hover:border-vscode-input-border hover:bg-vscode-input-background",
 							"focus:outline-1 focus:outline-vscode-focusBorder focus:outline-offset-1",
-							disabled ? "opacity-50 cursor-not-allowed" : "opacity-80 cursor-pointer hover:opacity-100",
+							disabled ? "opacity-50 cursor-not-allowed" : "opacity-60 cursor-pointer hover:opacity-75",
 							triggerClassName,
 						)}
 						style={{
