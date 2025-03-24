@@ -586,6 +586,105 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 			[updateCursorPosition],
 		)
 
+		const handleDrop = useCallback(
+			async (e: React.DragEvent<HTMLDivElement>) => {
+				e.preventDefault()
+				setIsDraggingOver(false)
+
+				const text = e.dataTransfer.getData("text")
+				if (text) {
+					// Split text on newlines to handle multiple files
+					const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "")
+
+					if (lines.length > 0) {
+						// Process each line as a separate file path
+						let newValue = inputValue.slice(0, cursorPosition)
+						let totalLength = 0
+
+						// Using a standard for loop instead of forEach for potential performance gains.
+						for (let i = 0; i < lines.length; i++) {
+							const line = lines[i]
+							// Convert each path to a mention-friendly format
+							const mentionText = convertToMentionPath(line, cwd)
+							newValue += mentionText
+							totalLength += mentionText.length
+
+							// Add space after each mention except the last one
+							if (i < lines.length - 1) {
+								newValue += " "
+								totalLength += 1
+							}
+						}
+
+						// Add space after the last mention and append the rest of the input
+						newValue += " " + inputValue.slice(cursorPosition)
+						totalLength += 1
+
+						setInputValue(newValue)
+						const newCursorPosition = cursorPosition + totalLength
+						setCursorPosition(newCursorPosition)
+						setIntendedCursorPosition(newCursorPosition)
+					}
+
+					return
+				}
+
+				const files = Array.from(e.dataTransfer.files)
+				if (!textAreaDisabled && files.length > 0) {
+					const acceptedTypes = ["png", "jpeg", "webp"]
+					const imageFiles = files.filter((file) => {
+						const [type, subtype] = file.type.split("/")
+						return type === "image" && acceptedTypes.includes(subtype)
+					})
+
+					if (!shouldDisableImages && imageFiles.length > 0) {
+						const imagePromises = imageFiles.map((file) => {
+							return new Promise<string | null>((resolve) => {
+								const reader = new FileReader()
+								reader.onloadend = () => {
+									if (reader.error) {
+										console.error(t("chat:errorReadingFile"), reader.error)
+										resolve(null)
+									} else {
+										const result = reader.result
+										resolve(typeof result === "string" ? result : null)
+									}
+								}
+								reader.readAsDataURL(file)
+							})
+						})
+						const imageDataArray = await Promise.all(imagePromises)
+						const dataUrls = imageDataArray.filter((dataUrl): dataUrl is string => dataUrl !== null)
+						if (dataUrls.length > 0) {
+							setSelectedImages((prevImages) =>
+								[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
+							)
+							if (typeof vscode !== "undefined") {
+								vscode.postMessage({
+									type: "draggedImages",
+									dataUrls: dataUrls,
+								})
+							}
+						} else {
+							console.warn(t("chat:noValidImages"))
+						}
+					}
+				}
+			},
+			[
+				cursorPosition,
+				cwd,
+				inputValue,
+				setInputValue,
+				setCursorPosition,
+				setIntendedCursorPosition,
+				textAreaDisabled,
+				shouldDisableImages,
+				setSelectedImages,
+				t,
+			],
+		)
+
 		const [isTtsPlaying, setIsTtsPlaying] = useState(false)
 
 		useEvent("message", (event: MessageEvent) => {
@@ -621,92 +720,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 				<div className="relative">
 					<div
 						className={cn("chat-text-area", "relative", "flex", "flex-col", "outline-none")}
-						onDrop={async (e) => {
-							e.preventDefault()
-							setIsDraggingOver(false)
-
-							const text = e.dataTransfer.getData("text")
-							if (text) {
-								// Split text on newlines to handle multiple files
-								const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "")
-
-								if (lines.length > 0) {
-									// Process each line as a separate file path
-									let newValue = inputValue.slice(0, cursorPosition)
-									let totalLength = 0
-
-									// Using a standard for loop instead of forEach for potential performance gains.
-									for (let i = 0; i < lines.length; i++) {
-										const line = lines[i]
-										// Convert each path to a mention-friendly format
-										const mentionText = convertToMentionPath(line, cwd)
-										newValue += mentionText
-										totalLength += mentionText.length
-
-										// Add space after each mention except the last one
-										if (i < lines.length - 1) {
-											newValue += " "
-											totalLength += 1
-										}
-									}
-
-									// Add space after the last mention and append the rest of the input
-									newValue += " " + inputValue.slice(cursorPosition)
-									totalLength += 1
-
-									setInputValue(newValue)
-									const newCursorPosition = cursorPosition + totalLength
-									setCursorPosition(newCursorPosition)
-									setIntendedCursorPosition(newCursorPosition)
-								}
-
-								return
-							}
-
-							const files = Array.from(e.dataTransfer.files)
-							if (!textAreaDisabled && files.length > 0) {
-								const acceptedTypes = ["png", "jpeg", "webp"]
-								const imageFiles = files.filter((file) => {
-									const [type, subtype] = file.type.split("/")
-									return type === "image" && acceptedTypes.includes(subtype)
-								})
-
-								if (!shouldDisableImages && imageFiles.length > 0) {
-									const imagePromises = imageFiles.map((file) => {
-										return new Promise<string | null>((resolve) => {
-											const reader = new FileReader()
-											reader.onloadend = () => {
-												if (reader.error) {
-													console.error(t("chat:errorReadingFile"), reader.error)
-													resolve(null)
-												} else {
-													const result = reader.result
-													resolve(typeof result === "string" ? result : null)
-												}
-											}
-											reader.readAsDataURL(file)
-										})
-									})
-									const imageDataArray = await Promise.all(imagePromises)
-									const dataUrls = imageDataArray.filter(
-										(dataUrl): dataUrl is string => dataUrl !== null,
-									)
-									if (dataUrls.length > 0) {
-										setSelectedImages((prevImages) =>
-											[...prevImages, ...dataUrls].slice(0, MAX_IMAGES_PER_MESSAGE),
-										)
-										if (typeof vscode !== "undefined") {
-											vscode.postMessage({
-												type: "draggedImages",
-												dataUrls: dataUrls,
-											})
-										}
-									} else {
-										console.warn(t("chat:noValidImages"))
-									}
-								}
-							}
-						}}
+						onDrop={handleDrop}
 						onDragOver={(e) => {
 							if (!e.shiftKey) {
 								setIsDraggingOver(false)
