@@ -780,7 +780,7 @@ const ChatTextArea = forwardRef<HTMLTextAreaElement, ChatTextAreaProps>(
 									"leading-vscode-editor-line-height",
 									"py-2",
 									"px-[9px]",
-									"z-[1]",
+									"z-[1000]",
 								)}
 								style={{
 									color: "transparent",
