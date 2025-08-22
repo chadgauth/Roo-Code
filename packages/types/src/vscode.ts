@@ -53,6 +53,14 @@ export const commandIds = [
 	"focusInput",
 	"acceptInput",
 	"focusPanel",
+
+	"toggleDiffAnimations",
+	"setDiffAnimationSpeed",
+	"toggleAutoScroll",
+	"configureAutoScroll",
+	"toggleAnimationEffect",
+	"applyAnimationPreset",
+	"showAnimationStats",
 ] as const
 
 export type CommandId = (typeof commandIds)[number]

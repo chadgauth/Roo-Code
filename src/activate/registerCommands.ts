@@ -9,6 +9,7 @@ import { getCommand } from "../utils/commands"
 import { ClineProvider } from "../core/webview/ClineProvider"
 import { ContextProxy } from "../core/config/ContextProxy"
 import { focusPanel } from "../utils/focusPanel"
+import { AnimationConfig } from "../integrations/editor/components/AnimationConfig"
 
 import { registerHumanRelayCallback, unregisterHumanRelayCallback, handleHumanRelayResponse } from "./humanRelay"
 import { handleNewTask } from "./handleTask"
@@ -220,6 +221,213 @@ const getCommandsMap = ({ context, outputChannel, provider }: RegisterCommandOpt
 		}
 
 		visibleProvider.postMessageToWebview({ type: "acceptInput" })
+	},
+	toggleDiffAnimations: async () => {
+		try {
+			const currentSettings = AnimationConfig.getSettings()
+			AnimationConfig.updateSettings({ enabled: !currentSettings.enabled })
+			await AnimationConfig.saveSettings()
+
+			const status = currentSettings.enabled ? "disabled" : "enabled"
+			vscode.window.showInformationMessage(`Diff animations ${status}`)
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to toggle diff animations: ${error.message}`)
+		}
+	},
+	setDiffAnimationSpeed: async () => {
+		try {
+			const speedOptions = [
+				{ label: "Slow", value: "slow" as const },
+				{ label: "Normal", value: "normal" as const },
+				{ label: "Fast", value: "fast" as const },
+				{ label: "Instant", value: "instant" as const },
+			]
+
+			const currentSettings = AnimationConfig.getSettings()
+			const currentSpeed = currentSettings.speed
+
+			const selectedOption = await vscode.window.showQuickPick(speedOptions, {
+				placeHolder: `Select animation speed (current: ${currentSpeed})`,
+				canPickMany: false,
+			})
+
+			if (selectedOption) {
+				AnimationConfig.updateSettings({ speed: selectedOption.value })
+				await AnimationConfig.saveSettings()
+				vscode.window.showInformationMessage(`Animation speed set to ${selectedOption.label.toLowerCase()}`)
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to set animation speed: ${error.message}`)
+		}
+	},
+	toggleAutoScroll: async () => {
+		try {
+			const currentSettings = AnimationConfig.getSettings()
+			const newAutoScrollEnabled = !currentSettings.autoScroll.enabled
+
+			AnimationConfig.updateSettings({
+				autoScroll: {
+					...currentSettings.autoScroll,
+					enabled: newAutoScrollEnabled,
+				},
+			})
+			await AnimationConfig.saveSettings()
+
+			const status = newAutoScrollEnabled ? "enabled" : "disabled"
+			vscode.window.showInformationMessage(`Auto-scroll ${status}`)
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to toggle auto-scroll: ${error.message}`)
+		}
+	},
+	configureAutoScroll: async () => {
+		try {
+			const currentSettings = AnimationConfig.getSettings()
+
+			const speedOptions = [
+				{ label: "Very Slow (2 lines/sec)", value: 2 },
+				{ label: "Slow (5 lines/sec)", value: 5 },
+				{ label: "Normal (10 lines/sec)", value: 10 },
+				{ label: "Fast (20 lines/sec)", value: 20 },
+				{ label: "Very Fast (50 lines/sec)", value: 50 },
+			]
+
+			const selectedSpeed = await vscode.window.showQuickPick(speedOptions, {
+				placeHolder: `Select auto-scroll speed (current: ${currentSettings.autoScroll.maxSpeed} lines/sec)`,
+				canPickMany: false,
+			})
+
+			if (selectedSpeed) {
+				AnimationConfig.updateSettings({
+					autoScroll: {
+						...currentSettings.autoScroll,
+						maxSpeed: selectedSpeed.value,
+					},
+				})
+				await AnimationConfig.saveSettings()
+				vscode.window.showInformationMessage(`Auto-scroll speed set to ${selectedSpeed.label}`)
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to configure auto-scroll: ${error.message}`)
+		}
+	},
+	toggleAnimationEffect: async () => {
+		try {
+			const currentSettings = AnimationConfig.getSettings()
+
+			const effectOptions = [
+				{ label: "Typewriter Effect", key: "typewriter" as const, enabled: currentSettings.effects.typewriter },
+				{ label: "Fade-in Animations", key: "fadeIn" as const, enabled: currentSettings.effects.fadeIn },
+				{
+					label: "Highlight Animations",
+					key: "highlights" as const,
+					enabled: currentSettings.effects.highlights,
+				},
+				{
+					label: "Pulse Active Line",
+					key: "pulseActive" as const,
+					enabled: currentSettings.effects.pulseActive,
+				},
+				{
+					label: "Smooth Scrolling",
+					key: "smoothScrolling" as const,
+					enabled: currentSettings.effects.smoothScrolling,
+				},
+				{
+					label: "Progress Indicators",
+					key: "progressIndicators" as const,
+					enabled: currentSettings.effects.progressIndicators,
+				},
+			]
+
+			const selectedEffect = await vscode.window.showQuickPick(
+				effectOptions.map((option) => ({
+					...option,
+					description: option.enabled ? "Currently enabled" : "Currently disabled",
+				})),
+				{
+					placeHolder: "Select animation effect to toggle",
+					canPickMany: false,
+				},
+			)
+
+			if (selectedEffect) {
+				const newEffects = {
+					...currentSettings.effects,
+					[selectedEffect.key]: !selectedEffect.enabled,
+				}
+
+				AnimationConfig.updateSettings({ effects: newEffects })
+				await AnimationConfig.saveSettings()
+
+				const status = selectedEffect.enabled ? "disabled" : "enabled"
+				vscode.window.showInformationMessage(`${selectedEffect.label} ${status}`)
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to toggle animation effect: ${error.message}`)
+		}
+	},
+	applyAnimationPreset: async () => {
+		try {
+			const presetOptions = [
+				{
+					label: "Performance Mode",
+					description: "Optimized for low-end devices",
+					preset: AnimationConfig.getPerformanceSettings(),
+				},
+				{
+					label: "Accessibility Mode",
+					description: "Reduced motion for accessibility",
+					preset: AnimationConfig.getAccessibilitySettings(),
+				},
+				{
+					label: "Default Settings",
+					description: "Reset to default configuration",
+					preset: AnimationConfig.getSettings(), // This will get defaults if we reset first
+				},
+			]
+
+			const selectedPreset = await vscode.window.showQuickPick(presetOptions, {
+				placeHolder: "Select animation preset",
+				canPickMany: false,
+			})
+
+			if (selectedPreset) {
+				if (selectedPreset.label === "Default Settings") {
+					AnimationConfig.resetToDefaults()
+				} else {
+					AnimationConfig.updateSettings(selectedPreset.preset)
+				}
+				await AnimationConfig.saveSettings()
+				vscode.window.showInformationMessage(`Applied ${selectedPreset.label}`)
+			}
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to apply animation preset: ${error.message}`)
+		}
+	},
+	showAnimationStats: async () => {
+		try {
+			const currentSettings = AnimationConfig.getSettings()
+
+			const stats = [
+				`Animation Status: ${currentSettings.enabled ? "Enabled" : "Disabled"}`,
+				`Speed: ${currentSettings.speed}`,
+				`Auto-scroll: ${currentSettings.autoScroll.enabled ? "Enabled" : "Disabled"}`,
+				`Auto-scroll Speed: ${currentSettings.autoScroll.maxSpeed} lines/sec`,
+				`Adaptive Speed: ${currentSettings.autoScroll.adaptiveSpeed ? "Yes" : "No"}`,
+				``,
+				`Active Effects:`,
+				`• Typewriter: ${currentSettings.effects.typewriter ? "✓" : "✗"}`,
+				`• Fade-in: ${currentSettings.effects.fadeIn ? "✓" : "✗"}`,
+				`• Highlights: ${currentSettings.effects.highlights ? "✓" : "✗"}`,
+				`• Pulse Active: ${currentSettings.effects.pulseActive ? "✓" : "✗"}`,
+				`• Smooth Scrolling: ${currentSettings.effects.smoothScrolling ? "✓" : "✗"}`,
+				`• Progress Indicators: ${currentSettings.effects.progressIndicators ? "✓" : "✗"}`,
+			].join("\n")
+
+			await vscode.window.showInformationMessage("Diff Animation Settings", { modal: true, detail: stats })
+		} catch (error) {
+			vscode.window.showErrorMessage(`Failed to show animation stats: ${error.message}`)
+		}
 	},
 })
 

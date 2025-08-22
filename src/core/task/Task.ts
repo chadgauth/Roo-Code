@@ -62,7 +62,7 @@ import { McpServerManager } from "../../services/mcp/McpServerManager"
 import { RepoPerTaskCheckpointService } from "../../services/checkpoints"
 
 // integrations
-import { DiffViewProvider } from "../../integrations/editor/DiffViewProvider"
+import { EnhancedDiffViewCoordinator } from "../../integrations/editor/EnhancedDiffViewCoordinator"
 import { findToolName, formatContentBlockToMarkdown } from "../../integrations/misc/export-markdown"
 import { RooTerminalProcess } from "../../integrations/terminal/types"
 import { TerminalRegistry } from "../../integrations/terminal/TerminalRegistry"
@@ -225,7 +225,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 	browserSession: BrowserSession
 
 	// Editing
-	diffViewProvider: DiffViewProvider
+	diffViewProvider: EnhancedDiffViewCoordinator
 	diffStrategy?: DiffStrategy
 	diffEnabled: boolean = false
 	fuzzyMatchThreshold: number
@@ -331,7 +331,7 @@ export class Task extends EventEmitter<TaskEvents> implements TaskLike {
 		this.consecutiveMistakeLimit = consecutiveMistakeLimit ?? DEFAULT_CONSECUTIVE_MISTAKE_LIMIT
 		this.providerRef = new WeakRef(provider)
 		this.globalStoragePath = provider.context.globalStorageUri.fsPath
-		this.diffViewProvider = new DiffViewProvider(this.cwd, this)
+		this.diffViewProvider = new EnhancedDiffViewCoordinator(this.cwd, this)
 		this.enableCheckpoints = enableCheckpoints
 		this.enableTaskBridge = enableTaskBridge
 

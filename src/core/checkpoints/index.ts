@@ -12,7 +12,7 @@ import { t } from "../../i18n"
 import { ClineApiReqInfo } from "../../shared/ExtensionMessage"
 import { getApiMetrics } from "../../shared/getApiMetrics"
 
-import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewProvider"
+import { DIFF_VIEW_URI_SCHEME } from "../../integrations/editor/DiffViewCoordinator"
 
 import { CheckpointServiceOptions, RepoPerTaskCheckpointService } from "../../services/checkpoints"
 

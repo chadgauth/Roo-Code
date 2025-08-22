@@ -174,6 +174,41 @@
 				"command": "roo-cline.acceptInput",
 				"title": "%command.acceptInput.title%",
 				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.toggleDiffAnimations",
+				"title": "Toggle Diff Animations",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.setDiffAnimationSpeed",
+				"title": "Set Diff Animation Speed",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.toggleAutoScroll",
+				"title": "Toggle Auto-Scroll",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.configureAutoScroll",
+				"title": "Configure Auto-Scroll Speed",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.toggleAnimationEffect",
+				"title": "Toggle Animation Effect",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.applyAnimationPreset",
+				"title": "Apply Animation Preset",
+				"category": "%configuration.title%"
+			},
+			{
+				"command": "roo-cline.showAnimationStats",
+				"title": "Show Animation Stats",
+				"category": "%configuration.title%"
 			}
 		],
 		"menus": {
@@ -398,6 +433,111 @@
 					"minimum": 0,
 					"maximum": 3600,
 					"description": "%settings.apiRequestTimeout.description%"
+				},
+				"roo-code.diff.animations.enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable animated diff effects for enhanced visual feedback"
+				},
+				"roo-code.diff.animations.speed": {
+					"type": "string",
+					"enum": [
+						"slow",
+						"normal",
+						"fast",
+						"instant"
+					],
+					"default": "normal",
+					"description": "Animation speed for diff effects"
+				},
+				"roo-code.diff.animations.effects.typewriter": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable typewriter effect for streaming content"
+				},
+				"roo-code.diff.animations.effects.fadeIn": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable fade-in animations for new content"
+				},
+				"roo-code.diff.animations.effects.highlights": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable diff highlighting animations"
+				},
+				"roo-code.diff.animations.effects.pulseActive": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable pulsing effect for active lines"
+				},
+				"roo-code.diff.animations.effects.smoothScrolling": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable smooth scrolling transitions"
+				},
+				"roo-code.diff.animations.effects.progressIndicators": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable progress indicators during streaming"
+				},
+				"roo-code.diff.animations.autoScroll.enabled": {
+					"type": "boolean",
+					"default": true,
+					"description": "Enable intelligent auto-scrolling to follow new content"
+				},
+				"roo-code.diff.animations.autoScroll.maxSpeed": {
+					"type": "number",
+					"default": 10,
+					"minimum": 1,
+					"maximum": 50,
+					"description": "Maximum auto-scroll speed in lines per second"
+				},
+				"roo-code.diff.animations.autoScroll.adaptiveSpeed": {
+					"type": "boolean",
+					"default": true,
+					"description": "Automatically adjust scroll speed based on content generation rate"
+				},
+				"roo-code.diff.animations.autoScroll.disableOnUserScroll": {
+					"type": "boolean",
+					"default": true,
+					"description": "Disable auto-scroll when user manually scrolls"
+				},
+				"roo-code.diff.animations.autoScroll.resumeAfterDelay": {
+					"type": "number",
+					"default": 2000,
+					"minimum": 500,
+					"maximum": 10000,
+					"description": "Time in milliseconds to wait before resuming auto-scroll after user interaction"
+				},
+				"roo-code.diff.animations.colors.addition": {
+					"type": "string",
+					"default": "rgba(46, 160, 67, 0.15)",
+					"description": "Background color for added content animations"
+				},
+				"roo-code.diff.animations.colors.deletion": {
+					"type": "string",
+					"default": "rgba(203, 36, 49, 0.15)",
+					"description": "Background color for deleted content animations"
+				},
+				"roo-code.diff.animations.colors.modification": {
+					"type": "string",
+					"default": "rgba(251, 189, 8, 0.15)",
+					"description": "Background color for modified content animations"
+				},
+				"roo-code.diff.animations.colors.activeLine": {
+					"type": "string",
+					"default": "rgba(255, 215, 0, 0.15)",
+					"description": "Background color for active line highlighting"
+				},
+				"roo-code.diff.animations.colors.completed": {
+					"type": "string",
+					"default": "rgba(46, 160, 67, 0.1)",
+					"description": "Background color for completed content animations"
+				},
+				"roo-code.diff.animations.colors.error": {
+					"type": "string",
+					"default": "rgba(203, 36, 49, 0.1)",
+					"description": "Background color for error animations"
 				}
 			}
 		}

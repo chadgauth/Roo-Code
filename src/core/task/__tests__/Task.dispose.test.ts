@@ -15,7 +15,7 @@ vi.mock("../../protect/RooProtectedController")
 vi.mock("../../context-tracking/FileContextTracker")
 vi.mock("../../../services/browser/UrlContentFetcher")
 vi.mock("../../../services/browser/BrowserSession")
-vi.mock("../../../integrations/editor/DiffViewProvider")
+vi.mock("../../../integrations/editor/EnhancedDiffViewCoordinator")
 vi.mock("../../tools/ToolRepetitionDetector")
 vi.mock("../../../api", () => ({
 	buildApiHandler: vi.fn(() => ({

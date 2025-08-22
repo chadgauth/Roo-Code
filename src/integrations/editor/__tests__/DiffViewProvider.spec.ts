@@ -1,4 +1,5 @@
-import { DiffViewProvider, DIFF_VIEW_URI_SCHEME, DIFF_VIEW_LABEL_CHANGES } from "../DiffViewProvider"
+import { EnhancedDiffViewCoordinator } from "../EnhancedDiffViewCoordinator"
+import { DIFF_VIEW_URI_SCHEME, DIFF_VIEW_LABEL_CHANGES } from "../DiffViewCoordinator"
 import * as vscode from "vscode"
 import * as path from "path"
 import delay from "delay"
@@ -101,8 +102,8 @@ vi.mock("../DecorationController", () => ({
 	})),
 }))
 
-describe("DiffViewProvider", () => {
-	let diffViewProvider: DiffViewProvider
+describe("EnhancedDiffViewCoordinator", () => {
+	let diffViewProvider: EnhancedDiffViewCoordinator
 	const mockCwd = "/mock/cwd"
 	let mockWorkspaceEdit: { replace: any; delete: any }
 	let mockTask: any
@@ -127,7 +128,7 @@ describe("DiffViewProvider", () => {
 			},
 		}
 
-		diffViewProvider = new DiffViewProvider(mockCwd, mockTask)
+		diffViewProvider = new EnhancedDiffViewCoordinator(mockCwd, mockTask)
 		// Mock the necessary properties and methods
 		;(diffViewProvider as any).relPath = "test.txt"
 		;(diffViewProvider as any).activeDiffEditor = {
